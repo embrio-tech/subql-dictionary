@@ -4,10 +4,10 @@ version: 1.0.0
 runner:
   node:
     name: "@subql/node"
-    version: "*"
+    version: "3.1.0"
   query:
     name: "@subql/query"
-    version: "*"
+    version: "2.6.0"
 description: >-
   A SubQuery Dictionary Project that provides increased indexing speed to all
   projects
