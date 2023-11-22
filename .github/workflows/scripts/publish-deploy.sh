@@ -23,4 +23,4 @@ fi
 
 IPFSCID=$(npx subql publish -o -f "$ROOTPATH/$FILE")
 
-npx subql deployment:deploy -d --ipfsCID="$IPFSCID" --projectName="${PROJECTNAME}" --org="${ORG%/*}"
+npx subql deployment:deploy -d --ipfsCID="{$IPFSCID}" --projectName="${PROJECTNAME}" --org="${ORG%/*}"
