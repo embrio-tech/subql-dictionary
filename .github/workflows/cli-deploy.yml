@@ -15,9 +15,9 @@ on:
         required: false
         type: string
         default: stage
-      resetProject:
-        default: true
-        type: boolean
+      # resetProject:
+      #   default: true
+      #   type: boolean
     # secrets:
     #   accessToken:
     #     required: true
@@ -61,15 +61,15 @@ jobs:
       #     --org="$SUBQL_PROJ_ORG" \
       #     --projectName="$SUBQL_PROJ_NAME"
       # continue-on-error: true
-      - name: Create Project
-        if: ${{ inputs.resetProject }}
-        run: |
-          npx subql project:create-project \
-          --apiVersion=2 \
-          --description="$SUBQL_PROJ_DESCRIPTION" \
-          --gitRepo="https://github.com/$GITHUB_REPOSITORY" \
-          --org="$SUBQL_PROJ_ORG" \
-          --projectName=centrifuge-dictionary
+      # - name: Create Project
+      #   if: ${{ inputs.resetProject }}
+      #   run: |
+      #     npx subql project:create-project \
+      #     --apiVersion=2 \
+      #     --description="$SUBQL_PROJ_DESCRIPTION" \
+      #     --gitRepo="https://github.com/$GITHUB_REPOSITORY" \
+      #     --org="$SUBQL_PROJ_ORG" \
+      #     --projectName=centrifuge-dictionary
       - name: Deploy CFG Version
         run: |
           npx subql deployment:deploy \
