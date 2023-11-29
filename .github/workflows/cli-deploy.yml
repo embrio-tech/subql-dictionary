@@ -16,7 +16,7 @@ on:
         type: string
         default: stage
       resetProject:
-        default: false
+        default: true
         type: boolean
     # secrets:
     #   accessToken:
