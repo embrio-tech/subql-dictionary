@@ -3,37 +3,100 @@ name: "Deploy to Hosted services"
 on:
   workflow_dispatch:
     inputs:
-      directory:
-        description: "Dictionary directory name"
+      projOrg:
         required: true
         type: string
-      projectYAML:
-        description: "project.yaml"
+        default: centrifuge
+      # projImage:
+      #   required: false
+      #   type: string
+      deploymentType:
+        description: stage or primary
         required: false
         type: string
-      projectName:
-        description: "Project name"
-        required: true
-        type: string
+        default: stage
+      resetProject:
+        default: false
+        type: boolean
+    # secrets:
+    #   accessToken:
+    #     required: true
+
 jobs:
-  deploy:
-    name: CLI Deploy
+  subql_deploy_workflow:
     runs-on: ubuntu-latest
-    environment:
-      name: DEPLOYMENT
     env:
+      SUBQL_INDEXER_VERSION: v3.2.0
+      SUBQL_QUERY_VERSION: v2.6.0
       SUBQL_ACCESS_TOKEN: ${{ secrets.SUBQL_ACCESS_TOKEN }}
+      SUBQL_PROJ_ORG: ${{ inputs.projOrg }}
+      # SUBQL_PROJ_IMAGE: ${{ inputs.projImage }}
+      SUBQL_DEPLOYMENT_TYPE: ${{ inputs.deploymentType }}
     steps:
-      - uses: actions/checkout@v2
-      - name: Setup Node.js environment
-        uses: actions/setup-node@v2
+      - name: Check out repo's default branch
+        uses: actions/checkout@v3
+      - name: Setup Node
+        uses: actions/setup-node@v3
         with:
           node-version: 18
-      - run: yarn
-        working-directory: ./${{github.event.inputs.directory}}
+          cache: npm
+      - name: Setup Yarn
+        run: yarn install --frozen-lockfile
       - name: Codegen
-        working-directory: ./${{github.event.inputs.directory}}
         run: yarn codegen
-      - name: Publish and Deploy
+      - name: SubQL CLI Version
+        run: yarn subql --version
+      - name: Publish SubQL version
         run: |
-          sh .github/workflows/scripts/publish-deploy.sh -f ${{ github.event.inputs.directory }} -o ${{github.repository}} -r ${{github.workspace}} -p ${{github.event.inputs.projectName}} -y ${{ github.event.inputs.projectYAML }}
+          npx subql publish -o -f .
+          echo "CFG_IPFSCID=$(cat .project-centrifuge-cid)" >> $GITHUB_ENV
+      - name: Delete Project
+        if: ${{ inputs.resetProject }}
+        run: |
+          npx subql project:delete-project \
+          --org="$SUBQL_PROJ_ORG" \
+          --projectName="$SUBQL_PROJ_NAME"
+        continue-on-error: true
+      - name: Create Project
+        if: ${{ inputs.resetProject }}
+        run: |
+          npx subql project:create-project \
+          --apiVersion=2 \
+          --description="$SUBQL_PROJ_DESCRIPTION" \
+          --gitRepo="https://github.com/$GITHUB_REPOSITORY" \
+          --org="$SUBQL_PROJ_ORG" \
+          --projectName="$SUBQL_PROJ_NAME" \
+          --logoURL="$SUBQL_PROJ_IMAGE"
+      - name: Deploy CFG Version
+        run: |
+          npx subql deployment:deploy \
+          -d \
+          --org="$SUBQL_PROJ_ORG" \
+          --endpoint="$SUBQL_CFG_ENDPOINT" \
+          --projectName="$SUBQL_PROJ_NAME" \
+          --ipfsCID="$CFG_IPFSCID" \
+          --type=$SUBQL_DEPLOYMENT_TYPE \
+          --disableHistorical \
+          --indexerVersion="$SUBQL_INDEXER_VERSION" \
+          --queryVersion="$SUBQL_QUERY_VERSION"
+  # deploy:
+  #   name: CLI Deploy
+  #   runs-on: ubuntu-latest
+  #   environment:
+  #     name: DEPLOYMENT
+  #   env:
+  #     SUBQL_ACCESS_TOKEN: ${{ secrets.SUBQL_ACCESS_TOKEN }}
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Setup Node.js environment
+  #       uses: actions/setup-node@v2
+  #       with:
+  #         node-version: 18
+  #     - run: yarn
+  #       working-directory: ./${{github.event.inputs.directory}}
+  #     - name: Codegen
+  #       working-directory: ./${{github.event.inputs.directory}}
+  #       run: yarn codegen
+  #     - name: Publish and Deploy
+  #       run: |
+  #         sh .github/workflows/scripts/publish-deploy.sh -f ${{ github.event.inputs.directory }} -o ${{github.repository}} -r ${{github.workspace}} -p ${{github.event.inputs.projectName}} -y ${{ github.event.inputs.projectYAML }}
