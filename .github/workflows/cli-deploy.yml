@@ -3,10 +3,6 @@ name: "Deploy to Hosted services"
 on:
   workflow_dispatch:
     inputs:
-      projOrg:
-        required: true
-        type: string
-        default: centrifuge
       deploymentType:
         description: stage or primary
         required: false
@@ -24,7 +20,6 @@ jobs:
       SUBQL_INDEXER_VERSION: v3.1.0
       SUBQL_QUERY_VERSION: v2.6.0
       SUBQL_ACCESS_TOKEN: ${{ secrets.SUBQL_ACCESS_TOKEN }}
-      SUBQL_PROJ_ORG: ${{ inputs.projOrg }}
       SUBQL_DEPLOYMENT_TYPE: ${{ inputs.deploymentType }}
     steps:
       - name: Check out repo's default branch
@@ -43,13 +38,12 @@ jobs:
       - name: Publish SubQL version
         run: |
           npx subql publish -o -f . 
-          ls -alh
           echo "CFG_IPFSCID=$(cat .project-cid)" >> $GITHUB_ENV
       - name: Deploy CFG Version
         run: |
           npx subql deployment:deploy \
           -d \
-          --org="$SUBQL_PROJ_ORG" \
+          --org="centrifuge" \
           --endpoint="wss://fullnode.parachain.centrifuge.io" \
           --projectName=centrifuge-dictionary  \
           --ipfsCID="$CFG_IPFSCID" \
