@@ -54,13 +54,13 @@ jobs:
         run: |
           npx subql publish -o -f .
           echo "CFG_IPFSCID=$(cat .project-centrifuge-cid)" >> $GITHUB_ENV
-      - name: Delete Project
-        if: ${{ inputs.resetProject }}
-        run: |
-          npx subql project:delete-project \
-          --org="$SUBQL_PROJ_ORG" \
-          --projectName="$SUBQL_PROJ_NAME"
-        continue-on-error: true
+      # - name: Delete Project
+      #   if: ${{ inputs.resetProject }}
+      #   run: |
+      #     npx subql project:delete-project \
+      #     --org="$SUBQL_PROJ_ORG" \
+      #     --projectName="$SUBQL_PROJ_NAME"
+      # continue-on-error: true
       - name: Create Project
         if: ${{ inputs.resetProject }}
         run: |
@@ -69,15 +69,14 @@ jobs:
           --description="$SUBQL_PROJ_DESCRIPTION" \
           --gitRepo="https://github.com/$GITHUB_REPOSITORY" \
           --org="$SUBQL_PROJ_ORG" \
-          --projectName="$SUBQL_PROJ_NAME" \
-          --logoURL="$SUBQL_PROJ_IMAGE"
+          --projectName=centrifuge-dictionary
       - name: Deploy CFG Version
         run: |
           npx subql deployment:deploy \
           -d \
           --org="$SUBQL_PROJ_ORG" \
-          --endpoint="$SUBQL_CFG_ENDPOINT" \
-          --projectName="$SUBQL_PROJ_NAME" \
+          --endpoint=wss://fullnode.parachain.centrifuge.io \
+          --projectName=centrifuge-dictionary  \
           --ipfsCID="$CFG_IPFSCID" \
           --type=$SUBQL_DEPLOYMENT_TYPE \
           --disableHistorical \
