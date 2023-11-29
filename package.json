@@ -8,7 +8,8 @@
     "prepack": "rm -rf dist && npm build",
     "test": "jest",
     "codegen": "subql codegen",
-    "start:docker": "docker-compose pull && docker-compose up --remove-orphans"
+    "start:docker": "docker-compose pull && docker-compose up --remove-orphans",
+    "down:docker": "docker-compose down -v"
   },
   "homepage": "https://github.com/subquery/subql-dictionary",
   "repository": "github:subquery/subql-dictionary",

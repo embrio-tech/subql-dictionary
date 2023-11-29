@@ -7,20 +7,11 @@ on:
         required: true
         type: string
         default: centrifuge
-      # projImage:
-      #   required: false
-      #   type: string
       deploymentType:
         description: stage or primary
         required: false
         type: string
         default: stage
-      # resetProject:
-      #   default: true
-      #   type: boolean
-    # secrets:
-    #   accessToken:
-    #     required: true
 
 permissions:
   contents: read
@@ -34,7 +25,6 @@ jobs:
       SUBQL_QUERY_VERSION: v2.6.0
       SUBQL_ACCESS_TOKEN: ${{ secrets.SUBQL_ACCESS_TOKEN }}
       SUBQL_PROJ_ORG: ${{ inputs.projOrg }}
-      # SUBQL_PROJ_IMAGE: ${{ inputs.projImage }}
       SUBQL_DEPLOYMENT_TYPE: ${{ inputs.deploymentType }}
     steps:
       - name: Check out repo's default branch
@@ -55,52 +45,15 @@ jobs:
           npx subql publish -o -f . 
           ls -alh
           echo "CFG_IPFSCID=$(cat .project-cid)" >> $GITHUB_ENV
-      # - name: Delete Project
-      #   if: ${{ inputs.resetProject }}
-      #   run: |
-      #     npx subql project:delete-project \
-      #     --org="$SUBQL_PROJ_ORG" \
-      #     --projectName="$SUBQL_PROJ_NAME"
-      # continue-on-error: true
-      # - name: Create Project
-      #   if: ${{ inputs.resetProject }}
-      #   run: |
-      #     npx subql project:create-project \
-      #     --apiVersion=2 \
-      #     --description="$SUBQL_PROJ_DESCRIPTION" \
-      #     --gitRepo="https://github.com/$GITHUB_REPOSITORY" \
-      #     --org="$SUBQL_PROJ_ORG" \
-      #     --projectName=centrifuge-dictionary
       - name: Deploy CFG Version
         run: |
           npx subql deployment:deploy \
           -d \
           --org="$SUBQL_PROJ_ORG" \
-          --endpoint=wss://fullnode.parachain.centrifuge.io \
+          --endpoint="wss://fullnode.parachain.centrifuge.io" \
           --projectName=centrifuge-dictionary  \
           --ipfsCID="$CFG_IPFSCID" \
           --type=$SUBQL_DEPLOYMENT_TYPE \
           --disableHistorical \
           --indexerVersion="$SUBQL_INDEXER_VERSION" \
           --queryVersion="$SUBQL_QUERY_VERSION"
-  # deploy:
-  #   name: CLI Deploy
-  #   runs-on: ubuntu-latest
-  #   environment:
-  #     name: DEPLOYMENT
-  #   env:
-  #     SUBQL_ACCESS_TOKEN: ${{ secrets.SUBQL_ACCESS_TOKEN }}
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - name: Setup Node.js environment
-  #       uses: actions/setup-node@v2
-  #       with:
-  #         node-version: 18
-  #     - run: yarn
-  #       working-directory: ./${{github.event.inputs.directory}}
-  #     - name: Codegen
-  #       working-directory: ./${{github.event.inputs.directory}}
-  #       run: yarn codegen
-  #     - name: Publish and Deploy
-  #       run: |
-  #         sh .github/workflows/scripts/publish-deploy.sh -f ${{ github.event.inputs.directory }} -o ${{github.repository}} -r ${{github.workspace}} -p ${{github.event.inputs.projectName}} -y ${{ github.event.inputs.projectYAML }}
