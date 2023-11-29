@@ -22,12 +22,13 @@ on:
     #   accessToken:
     #     required: true
 
+# permissions:
+#   contents: read
+#   issues: write
+
 jobs:
   subql_deploy_workflow:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: centrifuge
     env:
       SUBQL_INDEXER_VERSION: v3.2.0
       SUBQL_QUERY_VERSION: v2.6.0
