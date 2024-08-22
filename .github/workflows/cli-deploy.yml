@@ -44,7 +44,7 @@ jobs:
           npx subql deployment:deploy \
           -d \
           --org="centrifuge" \
-          --endpoint="wss://fullnode.parachain.centrifuge.io" \
+          --endpoint="wss://query.fullnode.centrifuge.io" \
           --projectName=centrifuge-dictionary  \
           --ipfsCID="$CFG_IPFSCID" \
           --type=$SUBQL_DEPLOYMENT_TYPE \
